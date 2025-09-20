@@ -1,0 +1,490 @@
+<!-- (c) diyyo 2025 MIT License -->
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loan by diyyo</title>
+    <link
+      rel="shortcut icon"
+      href="../assets/img/loan.png"
+      type="image/x-icon"
+    />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="description" content="Aplikasi manajemen hutang by diyyo White" />
+    <link rel="apple-touch-icon" href="../assets/img/loan.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-database-compat.js"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.js"></script>
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.css"
+    />
+    <!-- Toastify CSS -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+    <!-- Toastify JS -->
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/toastify-js"
+    ></script>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body class="bg-gray-100">
+    <!-- Login Section -->
+    <div
+      id="loginSection"
+      class="min-h-screen flex items-center justify-center"
+    >
+      <div class="bg-white p-8 rounded-lg shadow-md w-96">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-center text-blue-600">Login</h2>
+          <button id="themeToggle" class="theme-toggle" title="Toggle Dark Mode">
+            <span class="sr-only">Toggle Dark Mode</span>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <button
+            id="googleLogin"
+            class="w-full bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 flex items-center justify-center"
+          >
+            <img
+              src="https://www.google.com/favicon.ico"
+              class="w-5 h-5 mr-2"
+              alt="Google"
+            />
+            Login dengan Google
+          </button>
+          <button
+            id="githubLogin"
+            class="w-full bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700 flex items-center justify-center"
+          >
+            <i class="fab fa-github mr-2"></i>
+            Login dengan GitHub
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content (Hidden until logged in) -->
+    <div id="mainContent" class="hidden">
+      <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+          <div class="flex justify-between h-16">
+            <div class="flex items-center gap-2">
+              <h1 class="text-xl font-bold text-blue-600">Loan by diyyo</h1>
+              <span class="text-xs text-gray-500 version-text"></span>
+            </div>
+            <div class="flex items-center gap-4">
+              <button id="themeToggleMain" class="theme-toggle" title="Toggle Dark Mode">
+                <span class="sr-only">Toggle Dark Mode</span>
+              </button>
+              <button id="logoutBtn" class="text-gray-600 hover:text-gray-800">
+                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Statistics Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-white p-4 rounded-lg shadow statistics-card">
+            <h3 class="text-gray-500 text-sm">Total Hutang</h3>
+            <p id="totalDebt" class="text-2xl font-bold text-blue-600">Rp 0</p>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow statistics-card">
+            <h3 class="text-gray-500 text-sm">Lunas</h3>
+            <p id="paidDebt" class="text-2xl font-bold text-green-600">Rp 0</p>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow statistics-card">
+            <h3 class="text-gray-500 text-sm">Belum Lunas</h3>
+            <p id="unpaidDebt" class="text-2xl font-bold text-red-600">Rp 0</p>
+          </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6 statistics-card">
+          <div class="flex flex-col gap-4">
+            <div class="flex flex-col md:flex-row gap-4">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Cari nama atau catatan..."
+                class="flex-1 px-4 py-2 border rounded-md"
+              />
+              <select id="statusFilter" class="px-4 py-2 border rounded-md">
+                <option value="all">Semua Status</option>
+                <option value="unpaid">Belum Lunas</option>
+                <option value="paid">Sudah Lunas</option>
+              </select>
+            </div>
+            <!-- Action Buttons Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap gap-2">
+              <!-- Primary Actions -->
+              <button
+                id="addDebtBtn"
+                class="bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center gap-1"
+              >
+                <i class="fas fa-plus"></i>
+                <span>Tambah Hutang</span>
+              </button>
+              <button
+                id="manageDebtorsBtn"
+                class="bg-purple-600 text-white px-3 py-2 rounded-md hover:bg-purple-700 flex items-center justify-center gap-1"
+              >
+                <i class="fas fa-address-book"></i>
+                <span>Daftar Penghutang</span>
+              </button>
+              
+              <!-- Import/Export Actions -->
+              <label
+                class="bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 cursor-pointer flex items-center justify-center gap-1"
+              >
+                <i class="fas fa-file-import"></i>
+                <span>Import Data</span>
+                <input
+                  type="file"
+                  id="importFile"
+                  accept=".csv"
+                  class="hidden"
+                />
+              </label>
+              <button
+                id="exportBtn"
+                class="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 flex items-center justify-center gap-1"
+              >
+                <i class="fas fa-file-export"></i>
+                <span>Ekspor Data</span>
+              </button>
+              
+              <!-- Selected Actions (Hidden by default) -->
+              <button
+                id="exportSelectedBtn"
+                class="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 flex items-center justify-center gap-1 hidden"
+              >
+                <i class="fas fa-file-export"></i>
+                <span>Ekspor Terpilih</span>
+              </button>
+              <button
+                id="markAsPaidBtn"
+                class="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 flex items-center justify-center gap-1 hidden"
+              >
+                <i class="fas fa-check"></i>
+                <span>Tandai Lunas</span>
+              </button>
+              <button
+                id="markAsUnpaidBtn"
+                class="bg-yellow-600 text-white px-3 py-2 rounded-md hover:bg-yellow-700 flex items-center justify-center gap-1 hidden"
+              >
+                <i class="fas fa-clock"></i>
+                <span>Tandai Belum Lunas</span>
+              </button>
+              <button
+                id="deleteSelectedBtn"
+                class="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 flex items-center justify-center gap-1 hidden"
+              >
+                <i class="fas fa-trash"></i>
+                <span>Hapus Terpilih</span>
+              </button>
+              <button
+                id="deleteAllBtn"
+                class="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 flex items-center justify-center gap-1"
+              >
+                <i class="fas fa-trash-alt"></i>
+                <span>Hapus Semua</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Debt Modal -->
+        <div
+          id="addDebtModal"
+          class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full"
+        >
+          <div
+            class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Tambah Hutang Baru</h2>
+              <button
+                id="closeModalBtn"
+                class="text-gray-500 hover:text-gray-700"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <form id="debtForm" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Nama Penghutang</label>
+                <div class="mt-1 flex gap-2">
+                  <input
+                    type="text"
+                    id="debtorName"
+                    required
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  <button
+                    type="button"
+                    id="debtorDropdownBtn"
+                    class="px-3 py-2 border border-gray-300 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                  >
+                    <i class="fas fa-chevron-down pointer-events-none"></i>
+                  </button>
+                </div>
+                <div class="mt-1 flex items-center">
+                  <input type="checkbox" id="addToDebtorsList" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  <label for="addToDebtorsList" class="ml-2 text-sm text-gray-600">Tambahkan di daftar nama penghutang</label>
+                </div>
+                <div
+                  id="debtorDropdown"
+                  class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg hidden"
+                  style="width: calc(100% - 2rem);"
+                >
+                  <div class="max-h-48 overflow-y-auto">
+                    <!-- Daftar nama penghutang akan ditampilkan di sini -->
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Jumlah Hutang (IDR)</label>
+                <div class="mt-1 flex gap-2">
+                  <input
+                    type="number"
+                    id="debtAmount"
+                    required
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  <button
+                    type="button"
+                    id="clearAmountBtn"
+                    class="px-3 py-2 border border-gray-300 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <div class="mt-2 flex justify-center flex-wrap gap-2">
+                  <button
+                    type="button"
+                    class="quick-amount-btn bg-gray-100 text-gray-700 px-2 py-1 rounded hover:bg-gray-200"
+                    data-amount="500"
+                  >
+                    +0.5
+                  </button>
+                  <button
+                    type="button"
+                    class="quick-amount-btn bg-gray-100 text-gray-700 px-2 py-1 rounded hover:bg-gray-200"
+                    data-amount="1000"
+                  >
+                    +1
+                  </button>
+                  <button
+                    type="button"
+                    class="quick-amount-btn bg-gray-100 text-gray-700 px-2 py-1 rounded hover:bg-gray-200"
+                    data-amount="5000"
+                  >
+                    +5
+                  </button>
+                  <button
+                    type="button"
+                    class="quick-amount-btn bg-gray-100 text-gray-700 px-2 py-1 rounded hover:bg-gray-200"
+                    data-amount="10000"
+                  >
+                    +10
+                  </button>
+                  <button
+                    type="button"
+                    class="quick-amount-btn bg-gray-100 text-gray-700 px-2 py-1 rounded hover:bg-gray-200"
+                    data-amount="50000"
+                  >
+                    +50
+                  </button>
+                  <button
+                    type="button"
+                    class="quick-amount-btn bg-gray-100 text-gray-700 px-2 py-1 rounded hover:bg-gray-200"
+                    data-amount="100000"
+                  >
+                    +100
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Tanggal Peminjaman</label
+                >
+                <input
+                  type="date"
+                  id="borrowDate"
+                  required
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Tanggal Jatuh Tempo (Opsional)</label
+                >
+                <input
+                  type="date"
+                  id="dueDate"
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Status</label
+                >
+                <select
+                  id="debtStatus"
+                  required
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="unpaid">Belum Lunas</option>
+                  <option value="paid">Sudah Lunas</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Catatan Tambahan (Opsional)</label
+                >
+                <textarea
+                  id="notes"
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                ></textarea>
+              </div>
+              <div class="flex justify-end gap-2">
+                <button
+                  type="button"
+                  id="cancelBtn"
+                  class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  Simpan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Manage Debtors Modal -->
+        <div
+          id="manageDebtorsModal"
+          class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full"
+        >
+          <div
+            class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Daftar Penghutang</h2>
+              <button
+                id="closeDebtorsModalBtn"
+                class="text-gray-500 hover:text-gray-700"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="space-y-4">
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  id="newDebtorName"
+                  placeholder="Pisahkan dengan koma"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                />
+                <button
+                  id="addDebtorBtn"
+                  class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="selectAllDebtors"
+                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label for="selectAllDebtors" class="text-sm text-gray-600"
+                    >Pilih Semua</label
+                  >
+                </div>
+                <button
+                  id="deleteSelectedDebtorsBtn"
+                  class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 hidden"
+                >
+                  <i class="fas fa-trash mr-2"></i>Hapus Terpilih
+                </button>
+                <button
+                  id="deleteAllDebtorsBtn"
+                  class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                >
+                  <i class="fas fa-trash-alt mr-2"></i>Hapus Semua
+                </button>
+              </div>
+              <div id="debtorsList" class="space-y-2 max-h-60 overflow-y-auto">
+                <!-- Daftar nama penghutang akan ditampilkan di sini -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Debtor Settings Modal -->
+        <div
+          id="debtorSettingsModal"
+          class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full"
+        >
+          <div
+            class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Pengaturan Penghutang</h2>
+              <button
+                id="closeDebtorSettingsModalBtn"
+                class="text-gray-500 hover:text-gray-700"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nama Penghutang</label>
+                <input
+                  type="text"
+                  id="debtorSettingsName"
+                  readonly
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Limit Hutang (IDR)</label>
+                <div class="flex gap-2">
+                  <input
+                    type="number"
+                    id="debtorSettingsLimit"
+                    placeholder="0 = Tidak ada limit"
+                    min="0"
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  <button
+                    type="button"
+                    id="clearLimitBtn"
+                    class="px-3 py-2 border border-gray-300 rounded-md text-gray-600 hover:text-gray-800 
