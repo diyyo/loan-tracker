@@ -2,7 +2,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-A simple **debt management web application** built with **HTML, CSS, and JavaScript**, using **Firebase** for authentication and database management.
+A simple **debt management web application** built with **HTML, CSS, and JavaScript**, using **Firebase** for authentication and database.
 
 ## 🔑 Key Features
 
