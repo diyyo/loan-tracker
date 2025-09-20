@@ -25,7 +25,7 @@ A simple **debt management web application** built with **HTML, CSS, and JavaScr
 ## ❔ How to Use?
 
 1. Clone this repository:
-```bash
+   ```bash
    git clone https://github.com/diyyo/loan-tracker.git
    cd loan-tracker
    ```
